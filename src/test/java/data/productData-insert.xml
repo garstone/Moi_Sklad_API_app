@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <products id="1" model="iphone"/>
+    <products id="2" model="samsung"/>
+    <products id="3" model="oneplus"/>
+    <products id="4" model="nokia"/>
+</dataset>

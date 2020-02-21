@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <salesreport id="1" product_id="1" income="1000" date="2019.11.11"/>
+    <salesreport id="2" product_id="1" income="5000" date="2019.11.12"/>
+    <salesreport id="3" product_id="1" income="2000" date="2019.11.13"/>
+    <salesreport id="4" product_id="2" income="3000" date="2019.11.14"/>
+    <salesreport id="5" product_id="2" income="10000" date="2019.11.15"/>
+</dataset>

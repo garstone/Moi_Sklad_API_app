@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <store id="1" product_id="1" quantity="10" price="100" date="2019.10.10" updated_at="2019.10.10"/>
+    <store id="2" product_id="1" quantity="20" price="200" date="2019.10.11" updated_at="2019.10.11"/>
+    <store id="3" product_id="1" quantity="30" price="10" date="2019.10.12" updated_at="2019.10.12"/>
+    <store id="4" product_id="2" quantity="10" price="50" date="2019.10.13" updated_at="2019.10.13"/>
+</dataset>
