@@ -30,6 +30,7 @@ public class DemandServlet extends HttpServlet {
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        connection = (Connection) request.getServletContext().getAttribute("DBConnection");
         String json = IOUtils.toString(request.getReader());
         Store demand = new Gson().fromJson(json, Store.class);
         int income;
@@ -51,5 +52,9 @@ public class DemandServlet extends HttpServlet {
         } catch (SQLException | IOException | ParseException e) {
             e.printStackTrace();
         }
+    }
+
+    public Connection getConnection() {
+        return (Connection) getServletContext().getAttribute("DBConnection");
     }
 }

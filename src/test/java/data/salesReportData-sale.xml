@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <salesreport id="1" product_id="1" income="3000" date="2019.10.15"/>
+
+    <products id="1" model="iphone"/>
+    <products id="2" model="samsung"/>
+    <products id="3" model="oneplus"/>
+</dataset>

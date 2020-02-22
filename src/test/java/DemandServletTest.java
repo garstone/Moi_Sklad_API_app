@@ -1,12 +1,14 @@
-import com.kamenev.controller.NewProductServlet;
+import com.kamenev.controller.DemandServlet;
 import com.kamenev.controller.PurchaseServlet;
 import config.DBUnitConfig;
 import org.dbunit.Assertion;
 import org.dbunit.IDatabaseTester;
+import org.dbunit.dataset.DataSetException;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
 import org.dbunit.dataset.ReplacementDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,23 +21,25 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Properties;
 
 import static org.mockito.Mockito.when;
 
-public class PurchaseServletTest extends DBUnitConfig {
+public class DemandServletTest extends DBUnitConfig {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseServletTest.class);
-    private static final String MOCK_URL = "/purchase";
+    private static final String MOCK_URL = "/demand";
     String path = new File("src/test/java/data/").getAbsolutePath();
 
     private Connection connection;
     protected IDatabaseTester tester;
-    PurchaseServlet servlet;
+    DemandServlet servlet;
     private StringWriter responseWriter;
 
     @Mock
@@ -47,7 +51,7 @@ public class PurchaseServletTest extends DBUnitConfig {
     @Mock
     private ServletContext context;
 
-    public PurchaseServletTest(String name) throws Exception {
+    public DemandServletTest(String name) throws Exception {
         super(name);
     }
 
@@ -55,12 +59,11 @@ public class PurchaseServletTest extends DBUnitConfig {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         super.setUp();
-        servlet = new PurchaseServlet();
+        servlet = new DemandServlet();
         responseWriter = new StringWriter();
         tester = super.tester;
         connection = tester.getConnection().getConnection();
         Statement st = connection.createStatement();
-        st.execute("ALTER SEQUENCE store_id_seq RESTART WITH 4");
         FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
         builder.setColumnSensing(true);
         beforeData = builder.build(new File(path + "/storeData.xml"));
@@ -74,7 +77,7 @@ public class PurchaseServletTest extends DBUnitConfig {
         when(mockRequest.getRequestURI()).thenReturn(MOCK_URL);
         when(mockResponse.getWriter()).thenReturn(new PrintWriter(responseWriter));
         when(mockRequest.getReader())
-                .thenReturn(new BufferedReader(new FileReader(new File(path + "/purchaseServletData.json"))));
+                .thenReturn(new BufferedReader(new FileReader(new File(path + "/demandServletData.json"))));
         when(mockRequest.getServletContext()).thenReturn(context);
         when(mockRequest.getServletContext().getAttribute("DBConnection")).thenReturn(connection);
     }
@@ -83,7 +86,7 @@ public class PurchaseServletTest extends DBUnitConfig {
     public void testDoPost() throws Exception {
         FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
         builder.setColumnSensing(true);
-        IDataSet expectedData = builder.build(new File(path + "/storeData-save.xml"));
+        IDataSet expectedData = builder.build(new File(path + "/storeData-sale.xml"));
         ReplacementDataSet rExpected = new ReplacementDataSet(expectedData);
         replaceDate(rExpected, "2019.10.10");
         replaceDate(rExpected, "2019.10.11");
@@ -93,13 +96,34 @@ public class PurchaseServletTest extends DBUnitConfig {
         servlet.doPost(mockRequest, mockResponse);
         IDataSet actualData = tester.getConnection().createDataSet();
         ITable actualTable = actualData.getTable("store");
-        Assert.assertEquals("Закупка успешно добавлена в базу данных." + System.getProperty("line.separator"),
+        Assert.assertEquals("{\"income\": " + 3000 + "}" + System.getProperty("line.separator"),
                 responseWriter.toString());
+        Assertion.assertEquals(expectedTable, actualTable);
+        salesReportTables(expectedTable, actualTable);
         Assertion.assertEquals(expectedTable, actualTable);
     }
 
     private void replaceDate(ReplacementDataSet rData, String dateString) throws ParseException {
         rData.addReplacementObject(dateString, new Date(new SimpleDateFormat("yyyy.MM.dd")
                 .parse(dateString).getTime()));
+    }
+
+    private void salesReportTables(ITable expectedTable, ITable actualTable) throws Exception {
+        FlatXmlDataSetBuilder builder = new FlatXmlDataSetBuilder();
+        builder.setColumnSensing(true);
+        IDataSet expectedData = builder.build(new File(path + "/salesReportData-sale.xml"));
+        ReplacementDataSet rExpected = new ReplacementDataSet(expectedData);
+        replaceDate(rExpected, "2019.10.15");
+        expectedTable = rExpected.getTable("salesreport");
+        IDataSet actualData = tester.getConnection().createDataSet();
+        actualTable = actualData.getTable("salesreport");
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        PreparedStatement pst = connection.prepareStatement("DELETE FROM salesreport");
+        pst.executeUpdate();
+        Statement st = connection.createStatement();
+        st.execute("ALTER SEQUENCE salesreport_id_seq RESTART WITH 1");
     }
 }

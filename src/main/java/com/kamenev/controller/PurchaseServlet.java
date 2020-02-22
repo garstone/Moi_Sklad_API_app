@@ -22,7 +22,7 @@ import java.sql.SQLException;
 @WebServlet("/purchase")
 public class PurchaseServlet extends HttpServlet {
     Logger logger = LogManager.getRootLogger();
-    private Connection connection = DBConnectionManager.getConnection();
+    private Connection connection;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
@@ -31,7 +31,8 @@ public class PurchaseServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) {
+        connection = (Connection) req.getServletContext().getAttribute("DBConnection");
         try {
             String json = IOUtils.toString(req.getReader());
             Store purchase = new Gson().fromJson(json, Store.class);
@@ -39,11 +40,13 @@ public class PurchaseServlet extends HttpServlet {
             int quantity = purchase.getQuantity();
             int price = purchase.getPrice();
             String date = purchase.getDate();
+            String updated_at = purchase.getDate();
             StoreService storeService = new StoreService(connection);
-            if (storeService.add(model, quantity, price, date) == -1) {
+            if (storeService.add(model, quantity, price, date, updated_at) == -1) {
                 resp.setContentType("text/html;charset=utf-8");
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().println("Данная модель не добавлена в базу данных, закупку невозможно осуществить");
+                return;
             }
             resp.setContentType("text/html;charset=utf-8");
             resp.setStatus(HttpServletResponse.SC_OK);

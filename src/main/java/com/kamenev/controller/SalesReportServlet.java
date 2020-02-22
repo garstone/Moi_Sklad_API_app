@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
+import javax.servlet.ServletContext;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import java.text.ParseException;
 @WebServlet("/salesreport")
 public class SalesReportServlet extends HttpServlet {
     Logger logger = LogManager.getRootLogger();
-    private Connection connection = DBConnectionManager.getConnection();
+    private Connection connection;
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
         response.setContentType("text/html;charset=utf-8");
@@ -27,6 +28,7 @@ public class SalesReportServlet extends HttpServlet {
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        connection = (Connection) request.getServletContext().getAttribute("DBConnection");
         String json = IOUtils.toString(request.getReader());
         JSONObject obj = new JSONObject(json);
         String model = obj.getString("model");

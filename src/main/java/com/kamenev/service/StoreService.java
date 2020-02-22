@@ -62,7 +62,7 @@ public class StoreService {
                 q += party.getQuantity();
                 price += partyPrice * partyQuantity;
                 dao.delete(id);
-            } else if (party.getQuantity() == quantity){ // если норм то выходим из цикла
+            } else if (party.getQuantity() == quantity - q){ // если норм то выходим из цикла
                 dao.delete(id);
                 return price + partyPrice * partyQuantity;
             } else {
